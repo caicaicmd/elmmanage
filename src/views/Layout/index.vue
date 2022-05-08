@@ -1,10 +1,14 @@
 <template>
   <div class="main">
     <div class="menu">
-      <Menu />
+      <Menu :isCollapse="isCollapse" />
     </div>
     <div class="content">
-      <Content></Content>
+      <Content
+        @changeCollapse="changeCollapse"
+        :isCollapse="isCollapse"
+        :class="{ isActive: isCollapse }"
+      ></Content>
     </div>
   </div>
 </template>
@@ -18,22 +22,35 @@ export default {
     Menu,
     Content,
   },
+  data() {
+    return {
+      isCollapse: false,
+    };
+  },
+  methods: {
+    changeCollapse() {
+      this.isCollapse = !this.isCollapse;
+    },
+  },
 };
 </script>
 
 <style lang="less" scoped>
 .main {
   .menu {
-    background: pink;
-    width: 200px;
-    min-height: 1000px;
+    background: #333;
+    // width: 300px;
+    // min-height: 1000px;
     // 固定定位
     position: fixed;
     top: 0;
     bottom: 0;
   }
   .content {
-    margin-left: 200px;
+    margin-left: 300px;
+  }
+  .isActive {
+    margin-left: -236px;
   }
 }
 </style>
