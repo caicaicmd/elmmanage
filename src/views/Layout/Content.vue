@@ -39,6 +39,4 @@ export default {
     font-size: 24px;
   }
 }
-.isActive {
-}
 </style>
