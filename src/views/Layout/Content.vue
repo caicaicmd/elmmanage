@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="header" :class="{ isActive: isCollapse }">
+    <div class="header">
       <i
         v-if="!isCollapse"
         @click="changeCollapse"
