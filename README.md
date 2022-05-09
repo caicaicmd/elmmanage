@@ -98,7 +98,9 @@ https://github.com/bailicangdu/vue2-elm
   import './assets/css/reset.css'
   ```
 
+- 目录结构
 
+  <img src="README.assets/image-20220509174127805.png" alt="image-20220509174127805" style="zoom:33%;" />
 
 # 二、路由配置
 
@@ -223,6 +225,243 @@ https://github.com/bailicangdu/vue2-elm
 
 
 
+# 三、左侧菜单以及左侧菜单展开收起设置
+
+## 思路
+
+1. Menu.vue中的el-menu标签添加`:collapse="isCollapse"`设置isCollapse的值为true/false控制左侧菜单的收起以及展开
+2. 因为控制展开和收起的按钮在Content.vue中，因此需要用到父传子和子传父在组件中传值
+3. 因此，可以在index组件中（Menu.vue和Content.vue的父组件）中定义`isCollapse`变量，通过改变`index.vue`中`isCollapse`的值为true/false来控制左侧菜单的展开收起，默认为false展开
+4. 通过父传子把`index.vue`中的`isCollapse`变量传给`Menu.vue`接收，来控制菜单的展开
+5. 因为是要点击`Content.vue`中的图标来控制的，因此，在`Content.vue`的字体图标绑定点击事件，通过`this.$emit("changeCollapse")`传给`index.vue`
+6. 在`index.vue`接受`@changeCollapse="changeCollapse"`并且使用取反来改变`isCollapse`的值,`this.isCollapse = !this.isCollapse;`
+7. 因为控制展示隐藏的图标不能同时显示，因此，需要`index.vue`把`isCollapse`的值通过父传子传给`Content.vue`，子组件用props接收，之后通过`v-if和v-else`来控制展开收起图标的显示
+8. 因为，之前的宽度是写死的，因此，当菜单收起时，右侧区域会有留白，所以可以通过`动态class`来控制留白
+9. 在`index.vue`中给`<Content/>`添加动态class，设置`margin-left`的值
+
+## 具体代码
+
+### index.vue
+
+```vue
+<template>
+  <div class="main">
+    <div class="menu">
+      <Menu :isCollapse="isCollapse" />
+    </div>
+    <div class="content">
+      <Content
+        @changeCollapse="changeCollapse"
+        :isCollapse="isCollapse"
+        :class="{ isActive: isCollapse }"
+      ></Content>
+    </div>
+  </div>
+</template>
+
+<script>
+import Menu from "./Menu.vue";
+import Content from "./Content.vue";
+
+export default {
+  components: {
+    Menu,
+    Content,
+  },
+  data() {
+    return {
+      isCollapse: false,
+    };
+  },
+  methods: {
+    changeCollapse() {
+      this.isCollapse = !this.isCollapse;
+    },
+  },
+};
+</script>
+
+<style lang="less" scoped>
+.main {
+  .menu {
+    background: #333;
+    // width: 300px;
+    // min-height: 1000px;
+    // 固定定位
+    position: fixed;
+    top: 0;
+    bottom: 0;
+  }
+  .content {
+    margin-left: 300px;
+  }
+  .isActive {
+    margin-left: -236px;
+  }
+}
+</style>
+
+```
+
+### Menu.vue
+
+```vue
+<template>
+  <div>
+    <el-menu
+      default-active="/"
+      class="el-menu-vertical-demo"
+      background-color="#333"
+      text-color="#fff"
+      active-text-color="#ffd04b"
+      router
+      :collapse="isCollapse"
+    >
+      <el-menu-item index="/">
+        <i class="iconfont icon-shouye"></i>
+        <span slot="title">首页</span>
+      </el-menu-item>
+
+      <el-submenu index="/datamanage/userlist" class="menusize">
+        <template slot="title">
+          <i class="iconfont icon-shujuguanli"></i>
+          <span>数据管理</span>
+        </template>
+        <el-menu-item-group>
+          <el-menu-item index="/datamanage/userlist">
+            <i class="iconfont icon-yonghuliebiao"></i>
+            <span>用户列表</span>
+          </el-menu-item>
+          <el-menu-item index="/datamanage/merchantlist">
+            <i class="iconfont icon-shangjialiebiaoicon"></i>
+            <span>商家列表</span>
+          </el-menu-item>
+          <el-menu-item index="/datamanage/foodlist">
+            <i class="iconfont icon-shouyeshipin"></i>
+            <span>食品列表</span>
+          </el-menu-item>
+          <el-menu-item index="/datamanage/orderlist">
+            <i class="iconfont icon-dingdanliebiao"></i>
+            <span>订单列表</span>
+          </el-menu-item>
+          <el-menu-item index="/datamanage/adminlist">
+            <i class="iconfont icon-a-ziyuan26"></i>
+            <span>管理员列表</span>
+          </el-menu-item>
+        </el-menu-item-group>
+      </el-submenu>
+
+      <el-submenu index="/dataadd/addmerchant">
+        <template slot="title">
+          <i class="iconfont icon-tianjiashuju"></i>
+          <span>添加数据</span>
+        </template>
+        <el-menu-item-group>
+          <el-menu-item index="/datamanage/userlist">
+            <i class="iconfont icon-shangpu"></i>
+            <span>添加商铺</span>
+          </el-menu-item>
+          <el-menu-item index="/dataadd/addfood">
+            <i class="iconfont icon-shangpin"></i>
+            <span>添加商品</span>
+          </el-menu-item>
+        </el-menu-item-group>
+      </el-submenu>
+      <el-menu-item index="/userfenbu">
+        <i class="iconfont icon-tubiao-bingtu"></i>
+        <span slot="title">用户分布</span>
+      </el-menu-item>
+      <el-menu-item index="/adminsetting">
+        <i class="iconfont icon-shezhi"></i>
+        <span slot="title">管理员设置</span>
+      </el-menu-item>
+      <el-menu-item index="/adout">
+        <i class="iconfont icon-guanyu"></i>
+        <span slot="title">关于我</span>
+      </el-menu-item>
+    </el-menu>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ["isCollapse"],
+  data() {
+    return {};
+  },
+};
+</script>
+
+<style lang="less" scoped>
+.iconfont {
+  font-size: 20px;
+  letter-spacing: 18px;
+}
+.iconfont + span {
+  font-size: 18px;
+}
+.el-menu {
+  border-right: 0;
+  .is-active {
+    background: #222 !important;
+    color: #fff !important;
+  }
+}
+.el-menu-vertical-demo:not(.el-menu--collapse) {
+  width: 300px;
+  min-height: 400px;
+}
+</style>
+
+```
+
+### Content.vue
+
+```vue
+<template>
+  <div>
+    <div class="header">
+      <i
+        v-if="!isCollapse"
+        @click="changeCollapse"
+        class="iconfont icon-right-indent"
+      ></i>
+      <i
+        v-else
+        @click="changeCollapse"
+        class="iconfont icon-bx-right-indent"
+      ></i>
+      顶部区域
+    </div>
+    <div class="content">
+      <!-- 内容区域，路由出口 -->
+      <router-view></router-view>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ["isCollapse"],
+  methods: {
+    changeCollapse() {
+      this.$emit("changeCollapse");
+    },
+  },
+};
+</script>
+
+<style lang="less" scoped>
+.header {
+  background: #666;
+  height: 50px;
+  .iconfont {
+    font-size: 24px;
+  }
+}
+</style>
+
+```
 
 
 
